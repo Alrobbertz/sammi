@@ -1,13 +1,11 @@
-name: Build and upload to PyPI
+name: Build and upload to TestPyPI
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number }}-${{ github.event.ref }}
   cancel-in-progress: true
 
 on:
-  release:
-    types:
-      - published
+  workflow_dispatch: # For on demand runs
 
 jobs:
 
@@ -48,13 +46,13 @@ jobs:
           path: dist/*.tar.gz
           if-no-files-found: error
 
-  pypi-publish:
-    name: Upload release to PyPI
+  test-pypi-publish:
+    name: Upload release to TestPyPI
     runs-on: ubuntu-latest
     needs: build_sdist
     environment:
-      name: pypi
-      url: https://pypi.org/p/sammi-cdf
+      name: testpypi
+      url: https://test.pypi.org/p/sammi-cdf
     permissions:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
 
@@ -65,7 +63,8 @@ jobs:
           name: sdist
           path: dist
 
-      - name: Publish package distributions to PyPI
+      - name: Publish package distributions to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           verbose: true
+          repository-url: https://test.pypi.org/legacy/
